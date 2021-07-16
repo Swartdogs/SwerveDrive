@@ -142,7 +142,7 @@ public class Vector
         _theta = normalizeAngle(Math.toDegrees(Math.atan2(_x, _y)));
     }
 
-    private double normalizeAngle(double angle)
+    public static double normalizeAngle(double angle)
     {
         if (angle < 0)
         {

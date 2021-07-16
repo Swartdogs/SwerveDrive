@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import java.util.function.DoubleSupplier;
+
 import PIDControl.PIDControl;
 
 import frc.robot.abstraction.Motor;
@@ -7,8 +9,6 @@ import frc.robot.abstraction.PositionSensor;
 
 public class SwerveModule extends Vector
 {
-    private final double    _relativeZero;
-
     private Motor           _driveMotor;
     private Motor           _rotateMotor;
     private PositionSensor  _positionSensor;
@@ -16,25 +16,26 @@ public class SwerveModule extends Vector
     private PIDControl      _rotatePID;
     private double          _rotatePIDSetpoint;
 
+    private DoubleSupplier  _relativeZeroSupplier;
 
     public SwerveModule(Motor          driveMotor, 
                         Motor          rotateMotor, 
                         PositionSensor positionSensor, 
                         PIDControl     rotatePID, 
-                        double         relativeZero, 
                         double         x, 
-                        double         y)
+                        double         y,
+                        DoubleSupplier relativeZero)
     {
         super(x, y);
 
-        _relativeZero       = relativeZero;
+        _driveMotor           = driveMotor;
+        _rotateMotor          = rotateMotor;
+        _positionSensor       = positionSensor;
 
-        _driveMotor         = driveMotor;
-        _rotateMotor        = rotateMotor;
-        _positionSensor     = positionSensor;
+        _rotatePID            = rotatePID;
+        _rotatePIDSetpoint    = 0;
 
-        _rotatePID          = rotatePID;
-        _rotatePIDSetpoint  = 0;
+        _relativeZeroSupplier = relativeZero;
     }
 
     public void drive(Vector moduleCommand)
@@ -68,7 +69,7 @@ public class SwerveModule extends Vector
 
     public double getPosition()
     {
-        return _positionSensor.get() - _relativeZero;
+        return _positionSensor.get() - _relativeZeroSupplier.getAsDouble();
     }
 
     public double getPIDPosition()
@@ -115,6 +116,6 @@ public class SwerveModule extends Vector
 
     public double getRelativeZero()
     {
-        return _relativeZero;
+        return _relativeZeroSupplier.getAsDouble();
     }
 }

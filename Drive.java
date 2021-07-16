@@ -122,6 +122,11 @@ public class Drive extends SwartdogSubsystem
         return _origin;
     }
 
+    public SwerveModule getSwerveModule(int index)
+    {
+        return _swerveModules[index];
+    }
+
     public void driveInit(double distance, double maxSpeed, double minSpeed, boolean resetEncoders)
     {
         maxSpeed = Math.abs(maxSpeed);
