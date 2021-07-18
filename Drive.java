@@ -17,6 +17,8 @@ public class Drive extends SwartdogSubsystem
 
     private double         _rotateSetpoint;
 
+    private double         _rotateScaler;
+
     public Drive(PositionSensor gyro, PIDControl drivePID, PIDControl rotatePID, SwerveModule... swerveModules) 
     {
         _gyro               = gyro;
@@ -29,6 +31,8 @@ public class Drive extends SwartdogSubsystem
         _maxModuleDistance  = 0;
 
         _rotateSetpoint     = 0;
+
+        _rotateScaler       = 1;
 
         resetEncoders();
         setOrigin(0, 0);
@@ -61,7 +65,7 @@ public class Drive extends SwartdogSubsystem
             modulePosition.subtract(_origin);
 
             Vector rotateVector = new Vector(modulePosition.getY(), -modulePosition.getX());
-            rotateVector.multiply(rotate / _maxModuleDistance);
+            rotateVector.multiply((rotate * _rotateScaler) / _maxModuleDistance);
 
             Vector outputVector = translateVector.clone();
             outputVector.add(rotateVector);
@@ -236,5 +240,10 @@ public class Drive extends SwartdogSubsystem
         }
 
         return angle;
+    }
+
+    public void setRotateScaler(double scaler) 
+    {
+        _rotateScaler = scaler;
     }
 }
