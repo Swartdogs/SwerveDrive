@@ -202,14 +202,14 @@ public class Drive extends SwartdogSubsystem
 
     public void resetGyro() 
     {
-        _gyro.reset();
+        _gyro.set(0);
     }
 
     public void resetEncoders()
     {
         for (SwerveModule swerveModule : _swerveModules)
         {
-            swerveModule.getDriveMotor().getPositionSensor().reset();
+            swerveModule.getDriveMotor().getPositionSensor().set(0);
         }
     }
 
