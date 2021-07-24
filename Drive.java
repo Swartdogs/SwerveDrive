@@ -179,7 +179,6 @@ public class Drive extends SwartdogSubsystem
 
     public double getHeading()
     {
-
         return normalizeAngle(_gyro.get());
     }
 
@@ -200,9 +199,9 @@ public class Drive extends SwartdogSubsystem
         return heading;
     }
 
-    public void resetGyro() 
+    public void setGyro(double heading) 
     {
-        _gyro.set(0);
+        _gyro.set(heading);
     }
 
     public void resetEncoders()
