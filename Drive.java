@@ -19,6 +19,8 @@ public class Drive extends SwartdogSubsystem
 
     private double         _rotateScaler;
 
+    private boolean        _driveInUse;
+
     public Drive(PositionSensor gyro, PIDControl drivePID, PIDControl rotatePID, SwerveModule... swerveModules) 
     {
         _gyro               = gyro;
@@ -33,6 +35,8 @@ public class Drive extends SwartdogSubsystem
         _rotateSetpoint     = 0;
 
         _rotateScaler       = 1;
+
+        _driveInUse         = false;
 
         resetEncoders();
         setOrigin(0, 0);
@@ -244,5 +248,16 @@ public class Drive extends SwartdogSubsystem
     public void setRotateScaler(double scaler) 
     {
         _rotateScaler = scaler;
+    }
+
+    public void setDriveInUse(boolean driveInUse)
+    {
+        _driveInUse = driveInUse;
+    }
+
+    @Override
+    public void periodic()
+    {
+        if (!_driveInUse) drive(0, 0, 0);
     }
 }
