@@ -260,17 +260,4 @@ public class Drive extends SwartdogSubsystem
     {
         if (!_driveInUse) drive(0, 0, 0);
     }
-
-    @Override
-    public void setGameMode(GameMode mode) {
-        switch (mode)
-        {
-            case Disabled:
-                drive(0, 0, 0);
-                break;
-            
-            default:
-                break;
-        }
-    }
 }
