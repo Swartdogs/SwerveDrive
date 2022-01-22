@@ -1,97 +1,76 @@
 package frc.robot.subsystems.drive;
 
-import java.util.function.DoubleSupplier;
-
 import PIDControl.PIDControl;
 
 import frc.robot.abstraction.Motor;
 import frc.robot.abstraction.PositionSensor;
 
-public class SwerveModule extends Vector
+public abstract class SwerveModule extends Vector
 {
-    private Motor           _driveMotor;
-    private Motor           _rotateMotor;
-    private PositionSensor  _positionSensor;
+    protected Motor           _driveMotor;
+    protected Motor           _rotateMotor;
+    protected PositionSensor  _positionSensor;
+    protected PIDControl      _rotatePID;
+    
+    private double            _rotateSetpoint;
+    private double            _driveSetpoint;
 
-    private PIDControl      _rotatePID;
-    private double          _rotatePIDSetpoint;
+    private double            _relativeZero;
 
-    private DoubleSupplier  _relativeZeroSupplier;
+    private double            _oldDrivePosition;
+    private double            _distanceScaler;// distance (inches?) per encoder tick
 
-    public SwerveModule(Motor          driveMotor, 
-                        Motor          rotateMotor, 
-                        PositionSensor positionSensor, 
-                        PIDControl     rotatePID, 
-                        double         x, 
-                        double         y,
-                        DoubleSupplier relativeZero)
+    public SwerveModule(double x, 
+                        double y,
+                        double relativeZero,
+                        double distanceScaler)
     {
         super(x, y);
 
-        _driveMotor           = driveMotor;
-        _rotateMotor          = rotateMotor;
-        _positionSensor       = positionSensor;
+        _rotateSetpoint       = 0;
+        _driveSetpoint        = 0;
 
-        _rotatePID            = rotatePID;
-        _rotatePIDSetpoint    = 0;
+        _relativeZero         = relativeZero;
 
-        _relativeZeroSupplier = relativeZero;
+        _oldDrivePosition     = 0;
+        _distanceScaler       = distanceScaler;
     }
 
     public void drive(Vector moduleCommand)
     {
-        double driveSpeed  = moduleCommand.getR();
-        _rotatePIDSetpoint = moduleCommand.getTheta();
-        double position    = getPIDPosition();
+        _driveSetpoint  = moduleCommand.getR();
+        _rotateSetpoint = moduleCommand.getTheta();
+        
+        drive();
+    }
 
-        if (Math.abs(_rotatePIDSetpoint - position) > 90)
-        {
-            driveSpeed *= -1;
+    public void drive()
+    {
+        double PIDPosition = Math.toRadians(_rotateSetpoint - getPosition());
+        double driveSpeed = _driveSetpoint * Math.cos(PIDPosition);
 
-            if (_rotatePIDSetpoint < 180)
-            {
-                _rotatePIDSetpoint += 180;
-            }
+        // https://www.desmos.com/calculator/sehmrxy3lt
+        PIDPosition = Math.sin(PIDPosition) * (Math.cos(PIDPosition) / -Math.abs(Math.cos(PIDPosition)));
 
-            else
-            {
-                _rotatePIDSetpoint -= 180;
-            }
-
-            position = getPIDPosition();
-        }
-
-        _rotatePID.setSetpoint(_rotatePIDSetpoint, position);
-        _rotateMotor.set(_rotatePID.calculate(position));
+        _rotatePID.setSetpoint(0, PIDPosition);
+        _rotateMotor.set(_rotatePID.calculate(PIDPosition));
 
         _driveMotor.set(driveSpeed);
     }
 
     public double getPosition()
     {
-        return _positionSensor.get() - _relativeZeroSupplier.getAsDouble();
+        return _positionSensor.get() - _relativeZero;
     }
 
-    public double getPIDPosition()
+    public double getRotateSetpoint()
     {
-        double position = getPosition();
-
-        if ((_rotatePIDSetpoint - position) > 180)
-        {
-            position += 360;
-        }
-
-        else if ((_rotatePIDSetpoint - position) < -180)
-        {
-            position -= 360;
-        }
-
-        return position;
+        return _rotateSetpoint;
     }
 
-    public double getSetpoint()
+    public double getDriveSetpoint()
     {
-        return _rotatePIDSetpoint;
+        return _driveSetpoint;
     }
 
     public Motor getDriveMotor()
@@ -116,6 +95,28 @@ public class SwerveModule extends Vector
 
     public double getRelativeZero()
     {
-        return _relativeZeroSupplier.getAsDouble();
+        return _relativeZero;
+    }
+
+    public double getDrivePosition()
+    {
+        return _driveMotor.getPositionSensor().get();
+    }
+
+    public void resetDrivePosition()
+    {
+        _oldDrivePosition = getDrivePosition();
+    }
+
+    public Vector getOffset() 
+    {
+        Vector offset = new Vector();
+        
+        offset.setR((getDrivePosition() - _oldDrivePosition) * _distanceScaler);
+        resetDrivePosition();
+
+        offset.setTheta(getPosition());
+
+        return offset;
     }
 }

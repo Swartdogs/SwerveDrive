@@ -21,6 +21,9 @@ public class Drive extends SwartdogSubsystem
 
     private boolean        _driveInUse;
 
+    private Vector         _odometer;
+    //private Vector         _maxOdometryError;
+
     public Drive(PositionSensor gyro, PIDControl drivePID, PIDControl rotatePID, SwerveModule... swerveModules) 
     {
         _gyro               = gyro;
@@ -40,6 +43,7 @@ public class Drive extends SwartdogSubsystem
 
         resetEncoders();
         setOrigin(0, 0);
+        resetOdometer();
     }
 
     public void drive(double drive, double strafe, double rotate)
@@ -63,6 +67,8 @@ public class Drive extends SwartdogSubsystem
     {
         Vector[] moduleCommands = new Vector[_swerveModules.length];
 
+        double maxSpeed = 1;
+
         for (int i = 0; i < _swerveModules.length; i++)
         {
             Vector modulePosition = _swerveModules[i].clone();
@@ -75,28 +81,14 @@ public class Drive extends SwartdogSubsystem
             outputVector.add(rotateVector);
 
             moduleCommands[i] = outputVector;
-        }
 
-        double maxSpeed = 0;
+            maxSpeed = Math.max(maxSpeed, moduleCommands[i].getR());
+        }
 
         for (int i = 0; i < moduleCommands.length; i++)
         {
-            if (moduleCommands[i].getR() > maxSpeed)
-            {
-                maxSpeed = moduleCommands[i].getR();
-            }
-        }
+            moduleCommands[i].divide(maxSpeed);
 
-        if (maxSpeed > 1.0)
-        {
-            for (int i = 0; i < moduleCommands.length; i++)
-            {
-                moduleCommands[i].multiply(1 / maxSpeed);
-            }
-        }
-
-        for (int i = 0; i < _swerveModules.length; i++)
-        {
             _swerveModules[i].drive(moduleCommands[i]);
         }
     }
@@ -259,5 +251,42 @@ public class Drive extends SwartdogSubsystem
     public void periodic()
     {
         if (!_driveInUse) drive(0, 0, 0);
+        updateOdometry();
+    }
+
+    public void resetOdometer()
+    {
+        resetOdometer(new Vector());
+    }
+
+    public void resetOdometer(Vector newPosition)
+    {
+        _odometer = newPosition;
+
+        for (int i = 0; i < _swerveModules.length; i++)
+        {
+            _swerveModules[i].resetDrivePosition();
+        }
+    }
+
+    public Vector getOdometer()
+    {
+        return _odometer;
+    }
+
+    public void updateOdometry()
+    {
+        Vector change = new Vector();
+
+        for (int i = 0; i < _swerveModules.length; i++)
+        {
+            change.add(_swerveModules[i].getOffset());
+        }
+
+        change.divide(_swerveModules.length);
+
+        change.translatePolarPosition(getHeading(), 0.0);
+
+        _odometer.add(change);
     }
 }
