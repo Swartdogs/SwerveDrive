@@ -6,41 +6,35 @@ import frc.robot.abstraction.SwartdogSubsystem;
 
 public class Drive extends SwartdogSubsystem
 {
-    private PositionSensor _gyro;
-    private PIDControl     _drivePID;
-    private PIDControl     _rotatePID;
+    protected PositionSensor _gyro;
+    protected PIDControl     _drivePID;
+    protected PIDControl     _rotatePID;
 
-    private Vector         _origin;
+    private   Vector         _origin;
 
-    private SwerveModule[] _swerveModules;
-    private double         _maxModuleDistance;
+    protected SwerveModule[] _swerveModules;
+    private   double         _maxModuleDistance;
 
-    private double         _rotateSetpoint;
+    private   double         _rotateSetpoint;
 
-    private double         _rotateScaler;
+    private   boolean        _driveInUse;
 
-    private boolean        _driveInUse;
-
-    private Vector         _odometer;
+    private   Vector         _odometer;
     //private Vector         _maxOdometryError;
 
-    public Drive(PositionSensor gyro, PIDControl drivePID, PIDControl rotatePID, SwerveModule... swerveModules) 
+    public Drive() 
     {
-        _gyro               = gyro;
-        _drivePID           = drivePID;
-        _rotatePID          = rotatePID;
-
         _origin             = new Vector();
 
-        _swerveModules      = swerveModules;
         _maxModuleDistance  = 0;
 
         _rotateSetpoint     = 0;
 
-        _rotateScaler       = 1;
-
         _driveInUse         = false;
+    }
 
+    public void init()
+    {
         resetEncoders();
         setOrigin(0, 0);
         resetOdometer();
@@ -75,7 +69,7 @@ public class Drive extends SwartdogSubsystem
             modulePosition.subtract(_origin);
 
             Vector rotateVector = new Vector(modulePosition.getY(), -modulePosition.getX());
-            rotateVector.multiply((rotate * _rotateScaler) / _maxModuleDistance);
+            rotateVector.multiply(rotate / _maxModuleDistance);
 
             Vector outputVector = translateVector.clone();
             outputVector.add(rotateVector);
@@ -235,11 +229,6 @@ public class Drive extends SwartdogSubsystem
         }
 
         return angle;
-    }
-
-    public void setRotateScaler(double scaler) 
-    {
-        _rotateScaler = scaler;
     }
 
     public void setDriveInUse(boolean driveInUse)
