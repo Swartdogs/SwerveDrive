@@ -4,7 +4,7 @@ import PIDControl.PIDControl;
 import frc.robot.abstraction.PositionSensor;
 import frc.robot.abstraction.SwartdogSubsystem;
 
-public class Drive extends SwartdogSubsystem
+public abstract class Drive extends SwartdogSubsystem
 {
     protected PositionSensor _gyro;
     protected PIDControl     _drivePID;
@@ -17,8 +17,6 @@ public class Drive extends SwartdogSubsystem
 
     private   double         _rotateSetpoint;
 
-    private   boolean        _driveInUse;
-
     private   Vector         _odometer;
     //private Vector         _maxOdometryError;
 
@@ -29,8 +27,6 @@ public class Drive extends SwartdogSubsystem
         _maxModuleDistance  = 0;
 
         _rotateSetpoint     = 0;
-
-        _driveInUse         = false;
     }
 
     public void init()
@@ -231,15 +227,9 @@ public class Drive extends SwartdogSubsystem
         return angle;
     }
 
-    public void setDriveInUse(boolean driveInUse)
-    {
-        _driveInUse = driveInUse;
-    }
-
     @Override
     public void periodic()
     {
-        if (!_driveInUse) drive(0, 0, 0);
         updateOdometry();
     }
 
@@ -272,9 +262,11 @@ public class Drive extends SwartdogSubsystem
             change.add(_swerveModules[i].getOffset());
         }
 
+        //System.out.println(change);
+
         change.divide(_swerveModules.length);
 
-        change.translatePolarPosition(getHeading(), 0.0);
+        change.translatePolarPosition(0.0, getHeading());
 
         _odometer.add(change);
     }

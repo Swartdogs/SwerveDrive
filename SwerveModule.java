@@ -53,9 +53,13 @@ public abstract class SwerveModule extends Vector
         PIDPosition = Math.sin(PIDPosition) * (Math.cos(PIDPosition) / -Math.abs(Math.cos(PIDPosition)));
 
         _rotatePID.setSetpoint(0, PIDPosition);
-        _rotateMotor.set(_rotatePID.calculate(PIDPosition));
+
+        double rotateSpeed = _rotatePID.calculate(PIDPosition);
+        _rotateMotor.set(rotateSpeed);
 
         _driveMotor.set(driveSpeed);
+
+        //System.out.println(String.format("Drive Setpoint: %6.2f, Rotate Setpoint: %6.2f, Drive Speed: %6.2f, Rotate Speed: %6.2f, PIDPos: %6.2f", _driveSetpoint, _rotateSetpoint, _driveMotor.get(), _rotateMotor.get(), PIDPosition));
     }
 
     public double getPosition()
