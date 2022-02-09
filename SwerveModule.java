@@ -18,7 +18,7 @@ public abstract class SwerveModule extends Vector
     private double            _relativeZero;
 
     private double            _oldDrivePosition;
-    private double            _distanceScaler;// distance (inches?) per encoder tick
+    private double            _distanceScaler;
 
     public SwerveModule(double x, 
                         double y,
@@ -58,8 +58,6 @@ public abstract class SwerveModule extends Vector
         _rotateMotor.set(rotateSpeed);
 
         _driveMotor.set(driveSpeed);
-
-        //System.out.println(String.format("Drive Setpoint: %6.2f, Rotate Setpoint: %6.2f, Drive Speed: %6.2f, Rotate Speed: %6.2f, PIDPos: %6.2f", _driveSetpoint, _rotateSetpoint, _driveMotor.get(), _rotateMotor.get(), PIDPosition));
     }
 
     public double getPosition()

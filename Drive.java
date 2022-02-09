@@ -18,7 +18,6 @@ public abstract class Drive extends SwartdogSubsystem
     private   double         _rotateSetpoint;
 
     private   Vector         _odometer;
-    //private Vector         _maxOdometryError;
 
     public Drive() 
     {
@@ -261,8 +260,6 @@ public abstract class Drive extends SwartdogSubsystem
         {
             change.add(_swerveModules[i].getOffset());
         }
-
-        //System.out.println(change);
 
         change.divide(_swerveModules.length);
 
