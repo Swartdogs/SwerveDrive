@@ -4,42 +4,35 @@ import PIDControl.PIDControl;
 import frc.robot.abstraction.PositionSensor;
 import frc.robot.abstraction.SwartdogSubsystem;
 
-public class Drive extends SwartdogSubsystem
+public abstract class Drive extends SwartdogSubsystem
 {
-    private PositionSensor _gyro;
-    private PIDControl     _drivePID;
-    private PIDControl     _rotatePID;
+    protected PositionSensor _gyro;
+    protected PIDControl     _drivePID;
+    protected PIDControl     _rotatePID;
 
-    private Vector         _origin;
+    private   Vector         _origin;
 
-    private SwerveModule[] _swerveModules;
-    private double         _maxModuleDistance;
+    protected SwerveModule[] _swerveModules;
+    private   double         _maxModuleDistance;
 
-    private double         _rotateSetpoint;
+    private   double         _rotateSetpoint;
 
-    private double         _rotateScaler;
+    private   Vector         _odometer;
 
-    private boolean        _driveInUse;
-
-    public Drive(PositionSensor gyro, PIDControl drivePID, PIDControl rotatePID, SwerveModule... swerveModules) 
+    public Drive() 
     {
-        _gyro               = gyro;
-        _drivePID           = drivePID;
-        _rotatePID          = rotatePID;
-
         _origin             = new Vector();
 
-        _swerveModules      = swerveModules;
         _maxModuleDistance  = 0;
 
         _rotateSetpoint     = 0;
+    }
 
-        _rotateScaler       = 1;
-
-        _driveInUse         = false;
-
+    public void init()
+    {
         resetEncoders();
         setOrigin(0, 0);
+        resetOdometer();
     }
 
     public void drive(double drive, double strafe, double rotate)
@@ -63,40 +56,28 @@ public class Drive extends SwartdogSubsystem
     {
         Vector[] moduleCommands = new Vector[_swerveModules.length];
 
+        double maxSpeed = 1;
+
         for (int i = 0; i < _swerveModules.length; i++)
         {
             Vector modulePosition = _swerveModules[i].clone();
             modulePosition.subtract(_origin);
 
             Vector rotateVector = new Vector(modulePosition.getY(), -modulePosition.getX());
-            rotateVector.multiply((rotate * _rotateScaler) / _maxModuleDistance);
+            rotateVector.multiply(rotate / _maxModuleDistance);
 
             Vector outputVector = translateVector.clone();
             outputVector.add(rotateVector);
 
             moduleCommands[i] = outputVector;
-        }
 
-        double maxSpeed = 0;
+            maxSpeed = Math.max(maxSpeed, moduleCommands[i].getR());
+        }
 
         for (int i = 0; i < moduleCommands.length; i++)
         {
-            if (moduleCommands[i].getR() > maxSpeed)
-            {
-                maxSpeed = moduleCommands[i].getR();
-            }
-        }
+            moduleCommands[i].divide(maxSpeed);
 
-        if (maxSpeed > 1.0)
-        {
-            for (int i = 0; i < moduleCommands.length; i++)
-            {
-                moduleCommands[i].multiply(1 / maxSpeed);
-            }
-        }
-
-        for (int i = 0; i < _swerveModules.length; i++)
-        {
             _swerveModules[i].drive(moduleCommands[i]);
         }
     }
@@ -245,19 +226,45 @@ public class Drive extends SwartdogSubsystem
         return angle;
     }
 
-    public void setRotateScaler(double scaler) 
-    {
-        _rotateScaler = scaler;
-    }
-
-    public void setDriveInUse(boolean driveInUse)
-    {
-        _driveInUse = driveInUse;
-    }
-
     @Override
     public void periodic()
     {
-        if (!_driveInUse) drive(0, 0, 0);
+        updateOdometry();
+    }
+
+    public void resetOdometer()
+    {
+        resetOdometer(new Vector());
+    }
+
+    public void resetOdometer(Vector newPosition)
+    {
+        _odometer = newPosition;
+
+        for (int i = 0; i < _swerveModules.length; i++)
+        {
+            _swerveModules[i].resetDrivePosition();
+        }
+    }
+
+    public Vector getOdometer()
+    {
+        return _odometer;
+    }
+
+    public void updateOdometry()
+    {
+        Vector change = new Vector();
+
+        for (int i = 0; i < _swerveModules.length; i++)
+        {
+            change.add(_swerveModules[i].getOffset());
+        }
+
+        change.divide(_swerveModules.length);
+
+        change.translatePolarPosition(0.0, getHeading());
+
+        _odometer.add(change);
     }
 }

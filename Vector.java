@@ -151,4 +151,10 @@ public class Vector
 
         return angle % 360;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("(%6.2f, %6.2f)", getX(), getY());
+    }
 }
