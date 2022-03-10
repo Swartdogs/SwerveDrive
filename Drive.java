@@ -60,14 +60,9 @@ public abstract class Drive extends SwartdogSubsystem
 
         for (int i = 0; i < _swerveModules.length; i++)
         {
-            Vector modulePosition = _swerveModules[i].clone();
-            modulePosition.subtract(_origin);
-
-            Vector rotateVector = new Vector(modulePosition.getY(), -modulePosition.getX());
-            rotateVector.multiply(rotate / _maxModuleDistance);
-
-            Vector outputVector = translateVector.clone();
-            outputVector.add(rotateVector);
+            Vector modulePosition = _swerveModules[i].subtract(_origin);
+            Vector rotateVector = new Vector(modulePosition.getY(), -modulePosition.getX()).multiply(rotate / _maxModuleDistance);
+            Vector outputVector = translateVector.add(rotateVector);
 
             moduleCommands[i] = outputVector;
 
@@ -76,7 +71,7 @@ public abstract class Drive extends SwartdogSubsystem
 
         for (int i = 0; i < moduleCommands.length; i++)
         {
-            moduleCommands[i].divide(maxSpeed);
+            moduleCommands[i] = moduleCommands[i].divide(maxSpeed);
 
             _swerveModules[i].drive(moduleCommands[i]);
         }
@@ -97,7 +92,7 @@ public abstract class Drive extends SwartdogSubsystem
         for (int i = 0; i < _swerveModules.length; i++)
         {
             Vector modulePosition = _swerveModules[i].clone();
-            modulePosition.subtract(_origin);
+            modulePosition = modulePosition.subtract(_origin);
 
             if (modulePosition.getR() > _maxModuleDistance)
             {
@@ -258,13 +253,13 @@ public abstract class Drive extends SwartdogSubsystem
 
         for (int i = 0; i < _swerveModules.length; i++)
         {
-            change.add(_swerveModules[i].getOffset());
+            change = change.add(_swerveModules[i].getOffset());
         }
 
-        change.divide(_swerveModules.length);
+        change = change.divide(_swerveModules.length);
 
         change.translatePolarPosition(0.0, getHeading());
 
-        _odometer.add(change);
+        _odometer = _odometer.add(change);
     }
 }

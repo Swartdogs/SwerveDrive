@@ -100,34 +100,36 @@ public class Vector
         setPolarPosition(_r + dr, _theta + dtheta);
     }
 
-    public void multiply(double scalar)
+    public Vector multiply(double scalar)
     {
-        _r *= scalar;
+        Vector v = clone();
 
-        updateCartesian();
+        v._r *= scalar;
+
+        v.updateCartesian();
+
+        return v;
     }
 
-    public void divide(double scalar)
+    public Vector divide(double scalar)
     {
-        _r /= scalar;
+        Vector v = clone();
 
-        updateCartesian();
+        v._r /= scalar;
+
+        v.updateCartesian();
+
+        return v;
     }
 
-    public void add(Vector other)
+    public Vector add(Vector other)
     {
-        _x += other.getX();
-        _y += other.getY();
-
-        updatePolar();
+        return new Vector(getX() + other.getX(), getY() + other.getY());
     }
 
-    public void subtract(Vector other)
+    public Vector subtract(Vector other)
     {
-        _x -= other.getX();
-        _y -= other.getY();
-
-        updatePolar();
+        return new Vector(getX() - other.getX(), getY() - other.getY());
     }
 
     private void updateCartesian()
