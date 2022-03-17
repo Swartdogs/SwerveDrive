@@ -125,9 +125,7 @@ public abstract class Drive extends SwartdogSubsystem
             resetEncoders();
         }
 
-        Vector translateErrorVector = new Vector();
-        translateErrorVector.add(getOdometer());
-        translateErrorVector.subtract(_targetTranslation);
+        Vector translateErrorVector = _targetTranslation.subtract(getOdometer());
 
         _translatePID.setSetpoint(0, translateErrorVector.getR());
         _translatePID.setOutputRange(0, maxSpeed, minSpeed);
@@ -135,11 +133,8 @@ public abstract class Drive extends SwartdogSubsystem
 
     public Vector translateExec()
     {
-        Vector translateErrorVector = new Vector();
-        translateErrorVector.add(getOdometer());
-        translateErrorVector.subtract(_targetTranslation);
-
-        translateErrorVector.setR(_translatePID.calculate(translateErrorVector.getR()));
+        Vector translateErrorVector = _targetTranslation.subtract(getOdometer());
+        translateErrorVector.setR(_translatePID.calculate(-translateErrorVector.getR()));
 
         return translateErrorVector;
     }
@@ -156,6 +151,7 @@ public abstract class Drive extends SwartdogSubsystem
         _rotateSetpoint = heading;
 
         double PIDPosition = Math.toRadians(_rotateSetpoint - getHeading());
+        PIDPosition /= 2;
         PIDPosition = Math.sin(PIDPosition) * (Math.cos(PIDPosition) / -Math.abs(Math.cos(PIDPosition)));
 
         _rotatePID.setSetpoint(0, PIDPosition);
@@ -233,6 +229,11 @@ public abstract class Drive extends SwartdogSubsystem
     public void periodic()
     {
         updateOdometry();
+
+        for (int i = 0; i < _swerveModules.length; i++)
+        {
+            _swerveModules[i].drive();
+        }
     }
 
     public void resetOdometer()

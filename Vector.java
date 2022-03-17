@@ -15,10 +15,25 @@ public class Vector
 
     public Vector(double x, double y)
     {
-        _x       = x;
-        _y       = y;
+        this(x, y, true);
+    }
 
-        updatePolar();
+    public Vector(double first, double second, boolean isCartesian)
+    {
+        if (isCartesian)
+        {
+            _x = first;
+            _y = second;
+            
+            updatePolar();
+        }
+        else
+        {
+            _r     = first;
+            _theta = second;
+
+            updateCartesian();
+        }
     }
 
     public Vector clone()
