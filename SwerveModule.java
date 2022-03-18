@@ -1,7 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import PIDControl.PIDControl;
-
+import frc.robot.Constants;
 import frc.robot.abstraction.Motor;
 import frc.robot.abstraction.PositionSensor;
 
@@ -17,23 +17,30 @@ public abstract class SwerveModule extends Vector
 
     private double            _relativeZero;
 
-    private double            _oldDrivePosition;
-    private double            _distanceScaler;
+    private double            _curDrivePosition;
+    private double            _prevDrivePosition;
 
     public SwerveModule(double x, 
                         double y,
-                        double relativeZero,
-                        double distanceScaler)
+                        double relativeZero)
     {
         super(x, y);
 
-        _rotateSetpoint       = 0;
-        _driveSetpoint        = 0;
+        _rotateSetpoint    = 0;
+        _driveSetpoint     = 0;
 
-        _relativeZero         = relativeZero;
+        _relativeZero      = relativeZero;
 
-        _oldDrivePosition     = 0;
-        _distanceScaler       = distanceScaler;
+        _curDrivePosition  = 0;
+        _prevDrivePosition = 0;
+    }
+
+    public void periodic()
+    {
+        _prevDrivePosition = _curDrivePosition;
+        _curDrivePosition = _driveMotor.getPositionSensor().get();     
+        
+        drive();
     }
 
     public void drive(Vector moduleCommand)
@@ -102,23 +109,18 @@ public abstract class SwerveModule extends Vector
 
     public double getDrivePosition()
     {
-        return _driveMotor.getPositionSensor().get();
+        return _curDrivePosition;
+    }
+
+    public double getDriveVelocity()
+    {
+        return (_curDrivePosition - _prevDrivePosition) / Constants.PERIOD;
     }
 
     public void resetDrivePosition()
     {
-        _oldDrivePosition = getDrivePosition();
-    }
-
-    public Vector getOffset() 
-    {
-        Vector offset = new Vector();
-        
-        offset.setR((getDrivePosition() - _oldDrivePosition) * _distanceScaler);
-        resetDrivePosition();
-
-        offset.setTheta(getPosition());
-
-        return offset;
+        _driveMotor.getPositionSensor().set(0);
+        _curDrivePosition = 0;
+        _prevDrivePosition = 0;
     }
 }

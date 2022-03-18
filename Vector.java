@@ -147,6 +147,14 @@ public class Vector
         return new Vector(getX() - other.getX(), getY() - other.getY());
     }
 
+    public Vector rotate(double angle)
+    {
+        double cos = Math.cos(Math.toRadians(angle));
+        double sin = Math.sin(Math.toRadians(angle));
+
+        return new Vector(_x * cos - _y * sin, _x * sin + _y * cos);
+    }
+
     private void updateCartesian()
     {
         _y = _r * Math.cos(Math.toRadians(_theta));
