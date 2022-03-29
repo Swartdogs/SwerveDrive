@@ -39,9 +39,14 @@ public abstract class Drive extends SwartdogSubsystem
 
     public void drive(double drive, double strafe, double rotate)
     {
-        Vector translateVector = new Vector(strafe, drive);
+        drive(drive, strafe, rotate, true);
+    }
 
-        drive(translateVector, rotate, true);
+    public void drive(double drive, double strafe, double rotate, boolean absolute)
+    {
+        Vector translateVector = new Vector(strafe, drive);
+    
+        drive(translateVector, rotate, absolute);
     }
 
     public void drive(Vector translateVector, double rotate, boolean absolute)
