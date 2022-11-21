@@ -20,6 +20,8 @@ public abstract class Drive extends SwartdogSubsystem
     private   Vector         _odometer;
 
     private   Vector         _targetTranslation; 
+    private   double         _translationDistanceThreshold;
+    private   double         _translationCloseMaxSpeed;
 
     public Drive() 
     {
@@ -118,9 +120,11 @@ public abstract class Drive extends SwartdogSubsystem
         return _swerveModules[index];
     }
 
-    public void translateInit(Vector targetTranslation, double maxSpeed, double minSpeed, boolean resetEncoders)
+    public void translateInit(Vector targetTranslation, double distanceThreshold, double maxSpeed, double closeMaxSpeed, double minSpeed, boolean resetEncoders)
     {
         _targetTranslation = targetTranslation;
+        _translationDistanceThreshold = distanceThreshold;
+        _translationCloseMaxSpeed = closeMaxSpeed;
 
         maxSpeed = Math.abs(maxSpeed);
         minSpeed = Math.abs(minSpeed);
@@ -139,7 +143,16 @@ public abstract class Drive extends SwartdogSubsystem
     public Vector translateExec()
     {
         Vector translateErrorVector = _targetTranslation.subtract(getOdometer());
-        translateErrorVector.setR(_translatePID.calculate(-translateErrorVector.getR()));
+
+        if (translateErrorVector.getR() > _translationDistanceThreshold)
+        {
+            translateErrorVector.setR(_translatePID.calculate(-translateErrorVector.getR()));
+        }
+
+        else
+        {
+            translateErrorVector.setR(Math.min(_translatePID.calculate(-translateErrorVector.getR()), _translationCloseMaxSpeed));
+        }
 
         return translateErrorVector;
     }

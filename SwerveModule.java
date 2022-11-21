@@ -100,6 +100,11 @@ public abstract class SwerveModule extends Vector
         return _relativeZero;
     }
 
+    public void setRelativeZero(double zero)
+    {
+        _relativeZero = zero;
+    }
+
     public double getDrivePosition()
     {
         return _driveMotor.getPositionSensor().get();
