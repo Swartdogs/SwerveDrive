@@ -1,10 +1,10 @@
-package frc.robot.subsystems.drive;
+package frc.robot.drive;
 
 import PIDControl.PIDControl;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.abstraction.PositionSensor;
-import frc.robot.abstraction.SwartdogSubsystem;
 
-public abstract class Drive extends SwartdogSubsystem
+public abstract class Drive extends SubsystemBase
 {
     protected PositionSensor _gyro;
     protected PIDControl     _translatePID;
